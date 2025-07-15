@@ -180,3 +180,5 @@ def update_product(product_id):
     else:
         return jsonify({"message": f"Product with {product_id} does not exist"}), 404
 
+if __name__ == "__main__":
+    app.run(debug=True)
