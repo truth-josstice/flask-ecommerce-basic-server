@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
@@ -68,10 +68,13 @@ def seed_table():
         stock = 5
     )
 
-    product2 = Product()
-    product2.name = "Product 2"
-    product2.price = 15
-    product2.stock = 0
+    # this product cannot be created this way once we have initialised the product class with an __init__ method, cli commands should be kept separate for this reason
+    product2 = Product(
+    name = "Product 2",
+    description = "This is product 2",
+    price = 15,
+    stock = 0,
+    )
     
     #need to add and commit to the session
     db.session.add(product1)
@@ -103,5 +106,48 @@ def get_a_product(product_id):
     if product:
         data = product_schema.dump(product)
         return jsonify(data)
+    else:
+        return jsonify({"message": f'Product with id {product_id} does not exist'}), 404
+    
+# CREATE a product
+# POST method - /products/
+
+@app.route("/products", methods=["POST"])
+def create_product():
+    #Statement INSERT INTO products(*args) VALUES (*values);
+    # Get the body JSON data
+    body_data = request.get_json()
+    # Create product object and pass on values
+    new_product = Product(
+        name = body_data.get("name"),
+        description = body_data.get("description"),
+        price = body_data.get("price"),
+        stock = body_data.get("stock"),
+    )
+    # add to session and commit
+    db.session.add(new_product)
+    db.session.commit()
+
+    #return the newly created product
+    data = product_schema.dump(new_product)
+    return jsonify(data), 201
+
+# DELETE a product
+# DELETE /products/id
+@app.route("/products/<int:product_id>", methods=["DELETE"])
+def delete_product(product_id):
+    # DELETE FROM products WHERE id=product_id;
+    # Find the product with product_id from db
+    # SELECT * FROM products WHERE id=product_id;
+        # Method 1
+        # stmt = db.select(Product).filter_by(id=product_id)
+        # product = db.session.scalar(stmt)
+    product = Product.query.get(product_id)
+    # if exists delete product send message
+    if product:
+        db.session.delete(product)
+        db.session.commit()
+        return jsonify({"message": f'Product with id {product_id} deleted successfully'})
+    # else send acknowledgment message
     else:
         return jsonify({"message": f'Product with id {product_id} does not exist'}), 404
