@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
@@ -91,4 +91,17 @@ def get_products():
 
     # Convert object to JSON format - Serialise
     data = products_schema.dump(products_list)
-    return data
+    return jsonify(data)
+
+# READ specific product from the products list
+# GET /products/id
+@app.route('/products/<int:product_id>')
+def get_a_product(product_id):
+    #Statement: SELECT * FROM products WHERE id=product_id
+    product = Product.query.get(product_id)
+
+    if product:
+        data = product_schema.dump(product)
+        return jsonify(data)
+    else:
+        return jsonify({"message": f'Product with id {product_id} does not exist'}), 404
