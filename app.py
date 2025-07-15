@@ -2,14 +2,16 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+from dotenv import load_dotenv
+import os
 
-
-
+load_dotenv()
 app = Flask(__name__)
 
 # database+driver://username:password@server:port/databasename => "postgresql+psycopg2://mar_user:123456@localhost:5432/mar_ecommerce"
 
-app.config['SQLALCHEMY_DATABASE_URI']="postgresql+psycopg2://mar_user:123456@localhost:5432/mar_ecommerce"
+DATABASE_URI = os.getenv("DATABASE_URI")
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
 
 #must be defined after database uri
 db = SQLAlchemy(app)
@@ -177,3 +179,4 @@ def update_product(product_id):
     # else:
     else:
         return jsonify({"message": f"Product with {product_id} does not exist"}), 404
+
