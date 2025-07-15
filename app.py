@@ -8,7 +8,7 @@ import os
 load_dotenv()
 app = Flask(__name__)
 
-# database+driver://username:password@server:port/databasename => "postgresql+psycopg2://mar_user:123456@localhost:5432/mar_ecommerce"
+# database+driver://username:password@server:port/databasename
 
 DATABASE_URI = os.getenv("DATABASE_URI")
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
