@@ -92,7 +92,8 @@ def seed_table():
 @app.route('/products')
 def get_products():
     # Statement: SELECT * FROM products;
-    products_list = Product.query.all()
+    stmt = db.select(Product).where()
+    products_list = db.session.scalars(stmt)
 
     # Convert object to JSON format - Serialise
     data = products_schema.dump(products_list)
@@ -103,7 +104,8 @@ def get_products():
 @app.route('/products/<int:product_id>')
 def get_a_product(product_id):
     #Statement: SELECT * FROM products WHERE id=product_id
-    product = Product.query.get(product_id)
+    stmt = db.select(Product).where(Product.id == product_id)
+    product = db.session.scalar(stmt)
 
     if product:
         data = product_schema.dump(product)
@@ -144,7 +146,9 @@ def delete_product(product_id):
         # Method 1
         # stmt = db.select(Product).filter_by(id=product_id)
         # product = db.session.scalar(stmt)
-    product = Product.query.get(product_id)
+    # product = Product.query.get(product_id)
+    stmt = db.select(Product).where(Product.id == product_id)
+    product = db.session.scalar(stmt)
     # if exists delete product send message
     if product:
         db.session.delete(product)
