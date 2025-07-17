@@ -286,5 +286,24 @@ def delete_category(category_id):
     else:
         return jsonify({"message": f'Category with id {category_id} does not exist'}), 404
 
+@app.route("/categories/<int:category_id>", methods=["PUT", "PATCH"])
+def update_category(category_id):
+    stmt = db.select(Category).where(Category.id == category_id)
+    category = db.session.scalar(stmt)
+    try:
+        if category:
+            body_data = request.get_json()
+        
+            category.name = body_data.get("name", category.name)
+            category.description = body_data.get("description", category.description)
+
+            db.session.commit()
+            return jsonify(category_schema.dump(category))
+
+        else:
+            return jsonify({"message": f"Category with {category_id} does not exist"}), 404
+    except: 
+        return jsonify({"message": "request denied, invalid data type"}), 400
+
 if __name__ == "__main__":
     app.run(debug=True)
