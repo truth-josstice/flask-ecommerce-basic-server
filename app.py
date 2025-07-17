@@ -35,6 +35,7 @@ class Product(db.Model):
         self.stock = stock
 
 
+
 # Create a class for ProductSchema
 class ProductSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -161,10 +162,11 @@ def delete_product(product_id):
 #UPDATE method PUT - updates all paramaters in the table, replaces any which have not been included, can create a new row if doesnt exist, PATCH - updates a single value in the table, cannot create new row in table
 @app.route("/products/<int:product_id>", methods=["PUT", "PATCH"])
 def update_product(product_id):
-    product = Product.query.get(product_id)
-
-    if product:
-        body_data = request.get_json()
+    stmt = db.select(Product).where(Product.id == product_id)
+    product = db.session.scalar(stmt)
+    try:
+        if product:
+            body_data = request.get_json()
         # update the values - SHORT CIRCUIT
         # product.name = body_data.get("name") or product.name
         # product.description = body_data.get("description") or product.description
@@ -172,17 +174,19 @@ def update_product(product_id):
         # product.stock = body_data.get("stock") or product.stock
 
         # get method can incorporate or implicitly (a little more DRY)
-        product.name = body_data.get("name", product.name)
-        product.description = body_data.get("description", product.description)
-        product.price = body_data.get("price", product.price)
-        product.stock = body_data.get("stock", product.stock)
+            product.name = body_data.get("name", product.name)
+            product.description = body_data.get("description", product.description)
+            product.price = body_data.get("price", product.price)
+            product.stock = body_data.get("stock", product.stock)
 
-        db.session.commit()
-        return jsonify(product_schema.dump(product))
+            db.session.commit()
+            return jsonify(product_schema.dump(product))
     
     # else:
-    else:
-        return jsonify({"message": f"Product with {product_id} does not exist"}), 404
+        else:
+            return jsonify({"message": f"Product with {product_id} does not exist"}), 404
+    except: 
+        return jsonify({"message": "request denied, invalid data type"}), 400
 
 if __name__ == "__main__":
     app.run(debug=True)
