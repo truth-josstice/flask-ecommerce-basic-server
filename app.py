@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
+from flask_marshmallow import Marshmallow # Not needed with new update of marshmallow
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from dotenv import load_dotenv
 import os
@@ -34,7 +34,15 @@ class Product(db.Model):
         self.price = price
         self.stock = stock
 
+class Category(db.Model):
+    __tablename__ = "categories"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.String(255))
 
+    # def __init__(self, name, description): #New Marshmallow does not need the init but good to have to create default values etc
+    #     self.name = name
+    #     self.description = description
 
 # Create a class for ProductSchema
 class ProductSchema(SQLAlchemyAutoSchema):
@@ -42,8 +50,18 @@ class ProductSchema(SQLAlchemyAutoSchema):
         model = Product
         load_instance = True
 
+# Create a class for CategorySchema
+class CategorySchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Category
+        load_instance = True
+
+
 product_schema = ProductSchema()
 products_schema = ProductSchema(many=True)
+
+category_schema = CategorySchema()
+categories_schema = CategorySchema(many=True)
 
 
 @app.route('/')
