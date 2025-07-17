@@ -102,6 +102,25 @@ def seed_table():
     db.session.add(product2)
     db.session.commit()
 
+    # Create a list of category objects
+    categories = [
+        Category(
+            name = "Electronics",
+            description = "Gadgets and tech"
+        ), 
+        Category(
+            name = "Books",
+            description = "Fiction non-fiction and everything in between"
+        ), 
+        Category(
+            name = "Supplies"
+        )
+    ]
+
+    # Add list to session
+    db.session.add_all(categories)
+    db.session.commit()
+
     print("Tables seeded!")
 
 # CRUD operations on the Products Table
