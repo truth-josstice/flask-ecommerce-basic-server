@@ -225,5 +225,66 @@ def update_product(product_id):
     except: 
         return jsonify({"message": "request denied, invalid data type"}), 400
 
+@app.route('/categories')
+def get_categories():
+    # Define get query
+    stmt = db.select(Category)
+    # Execute it -scalars
+    categories_list = db.session.scalars(stmt)
+    # Serialise it
+    data = categories_schema.dump(categories_list)
+    # Return it
+    return jsonify(data)
+
+@app.route('/categories/<int:category_id>')
+def get_category(category_id):
+    # Define get query
+    stmt = db.select(Category).where(Category.id == category_id)
+    # Execute it -scalars
+    category = db.session.scalar(stmt)
+    
+    if category:
+        data = product_schema.dump(category)
+        return jsonify(data)
+    else:
+        return jsonify({"message": f'Category with id {category_id} does not exist'}), 404
+    
+    # Serialise it
+    # data = categories_schema.dump(category)
+    # Return it
+    # return jsonify(data)
+
+@app.route('/categories', methods=["POST"])
+def create_category():
+    #Statement INSERT INTO categorys(*args) VALUES (*values);
+    # Get the body JSON data
+    body_data = request.get_json()
+    # Create category object and pass on values
+    new_category = Category(
+        name = body_data.get("name"),
+        description = body_data.get("description")
+    )
+    # add to session and commit
+    db.session.add(new_category)
+    db.session.commit()
+
+    #return the newly created category
+    data = category_schema.dump(new_category)
+    return jsonify(data), 201
+
+@app.route("/categories/<int:category_id>", methods=["DELETE"])
+def delete_category(category_id):
+
+    stmt = db.select(Category).where(Category.id == category_id)
+    category = db.session.scalar(stmt)
+
+    if category:
+        db.session.delete(category)
+        db.session.commit()
+        return jsonify({"message": f'Category with id {category_id} deleted successfully'})
+
+    else:
+        return jsonify({"message": f'Category with id {category_id} does not exist'}), 404
+
 if __name__ == "__main__":
     app.run(debug=True)
